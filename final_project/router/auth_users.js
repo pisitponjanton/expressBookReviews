@@ -17,7 +17,6 @@ const authenticatedUser = (username, password) => {
   );
 };
 
-// Task 8: Login
 regdUsers.post("/login", (req, res) => {
   const { username, password } = req.body;
 
@@ -29,7 +28,7 @@ regdUsers.post("/login", (req, res) => {
 
   if (!authenticatedUser(username, password)) {
     return res.status(401).json({
-      message: "Invalid login credentials",
+      message: "Invalid Login. Check username and password",
     });
   }
 
@@ -50,9 +49,8 @@ regdUsers.post("/login", (req, res) => {
   });
 });
 
-// Task 9: Add or update a review
 regdUsers.put("/auth/review/:isbn", (req, res) => {
-  const isbn = req.params.isbn;
+  const { isbn } = req.params;
   const review = req.query.review || req.body.review;
   const username = req.session.authorization.username;
 
@@ -76,9 +74,8 @@ regdUsers.put("/auth/review/:isbn", (req, res) => {
   });
 });
 
-// Task 10: Delete a review
 regdUsers.delete("/auth/review/:isbn", (req, res) => {
-  const isbn = req.params.isbn;
+  const { isbn } = req.params;
   const username = req.session.authorization.username;
 
   if (!books[isbn]) {
