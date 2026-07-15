@@ -28,7 +28,7 @@ regdUsers.post("/login", (req, res) => {
 
   if (!authenticatedUser(username, password)) {
     return res.status(401).json({
-      message: "Invalid Login. Check username and password",
+      message: "Invalid username or password",
     });
   }
 

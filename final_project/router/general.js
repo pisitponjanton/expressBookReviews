@@ -1,6 +1,7 @@
 const express = require("express");
 const axios = require("axios");
 const books = require("./booksdb.js");
+
 const {
   isValid,
   users,
@@ -9,6 +10,7 @@ const {
 const publicUsers = express.Router();
 const BASE_URL = "http://localhost:5000";
 
+// Task 7: Register
 publicUsers.post("/register", (req, res) => {
   const { username, password } = req.body;
 
@@ -31,10 +33,10 @@ publicUsers.post("/register", (req, res) => {
   });
 });
 
+// Task 2: Get all books
 publicUsers.get("/", async (req, res) => {
   try {
-    const result = await Promise.resolve(books);
-    return res.status(200).json(result);
+    return res.status(200).json(books);
   } catch (error) {
     return res.status(500).json({
       message: error.message,
@@ -42,11 +44,11 @@ publicUsers.get("/", async (req, res) => {
   }
 });
 
+// Task 3: Get book by ISBN
 publicUsers.get("/isbn/:isbn", async (req, res) => {
   try {
-    const book = await Promise.resolve(
-      books[req.params.isbn]
-    );
+    const { isbn } = req.params;
+    const book = books[isbn];
 
     if (!book) {
       return res.status(404).json({
@@ -62,22 +64,21 @@ publicUsers.get("/isbn/:isbn", async (req, res) => {
   }
 });
 
+// Task 4: Get books by author
 publicUsers.get("/author/:author", async (req, res) => {
   try {
-    const searchAuthor =
+    const requestedAuthor =
       req.params.author.toLowerCase();
 
-    const result = await Promise.resolve(
-      Object.fromEntries(
-        Object.entries(books).filter(([, book]) =>
-          book.author
-            .toLowerCase()
-            .includes(searchAuthor)
-        )
+    const matchingBooks = Object.fromEntries(
+      Object.entries(books).filter(([, book]) =>
+        book.author
+          .toLowerCase()
+          .includes(requestedAuthor)
       )
     );
 
-    return res.status(200).json(result);
+    return res.status(200).json(matchingBooks);
   } catch (error) {
     return res.status(500).json({
       message: error.message,
@@ -85,22 +86,21 @@ publicUsers.get("/author/:author", async (req, res) => {
   }
 });
 
+// Task 5: Get books by title
 publicUsers.get("/title/:title", async (req, res) => {
   try {
-    const searchTitle =
+    const requestedTitle =
       req.params.title.toLowerCase();
 
-    const result = await Promise.resolve(
-      Object.fromEntries(
-        Object.entries(books).filter(([, book]) =>
-          book.title
-            .toLowerCase()
-            .includes(searchTitle)
-        )
+    const matchingBooks = Object.fromEntries(
+      Object.entries(books).filter(([, book]) =>
+        book.title
+          .toLowerCase()
+          .includes(requestedTitle)
       )
     );
 
-    return res.status(200).json(result);
+    return res.status(200).json(matchingBooks);
   } catch (error) {
     return res.status(500).json({
       message: error.message,
@@ -108,11 +108,11 @@ publicUsers.get("/title/:title", async (req, res) => {
   }
 });
 
+// Task 6: Get book reviews
 publicUsers.get("/review/:isbn", async (req, res) => {
   try {
-    const book = await Promise.resolve(
-      books[req.params.isbn]
-    );
+    const { isbn } = req.params;
+    const book = books[isbn];
 
     if (!book) {
       return res.status(404).json({
@@ -129,35 +129,60 @@ publicUsers.get("/review/:isbn", async (req, res) => {
 });
 
 /*
- * Axios implementations for Tasks 11–14.
- * Run these functions after the server has started.
+ * Axios and async/await implementations
+ * required for the asynchronous retrieval tasks.
  */
 
 async function getAllBooksUsingAxios() {
-  const response = await axios.get(`${BASE_URL}/`);
-  return response.data;
+  try {
+    const response = await axios.get(`${BASE_URL}/`);
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      `Unable to retrieve books: ${error.message}`
+    );
+  }
 }
 
 function getBookByISBNUsingAxios(isbn) {
   return axios
-    .get(`${BASE_URL}/isbn/${encodeURIComponent(isbn)}`)
-    .then((response) => response.data);
+    .get(
+      `${BASE_URL}/isbn/${encodeURIComponent(isbn)}`
+    )
+    .then((response) => response.data)
+    .catch((error) => {
+      throw new Error(
+        `Unable to retrieve book: ${error.message}`
+      );
+    });
 }
 
 async function getBooksByAuthorUsingAxios(author) {
-  const response = await axios.get(
-    `${BASE_URL}/author/${encodeURIComponent(author)}`
-  );
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/author/${encodeURIComponent(author)}`
+    );
 
-  return response.data;
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      `Unable to retrieve author books: ${error.message}`
+    );
+  }
 }
 
 async function getBooksByTitleUsingAxios(title) {
-  const response = await axios.get(
-    `${BASE_URL}/title/${encodeURIComponent(title)}`
-  );
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/title/${encodeURIComponent(title)}`
+    );
 
-  return response.data;
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      `Unable to retrieve title books: ${error.message}`
+    );
+  }
 }
 
 module.exports.general = publicUsers;
